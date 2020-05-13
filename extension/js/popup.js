@@ -3,6 +3,7 @@
     var settings = {};
     var BLANK_WEBSITE = { "url": ""};
     var BLANK_THING = { "title": ""};
+    var BLANK_PICTURE = { "path": "" };
     var websites = [
         { "url": "facebook.com" },
         { "url": "twitter.com" },
@@ -13,6 +14,7 @@
         { "title": "take a quick walk" },
         { "title": ""}
     ];
+    var pictures = [{ "path": "My Kids" }]
     var timeouts = {};
     var currentPhoto;
 
@@ -33,9 +35,16 @@
                     saveThingsToDo.push(thingsToDo[t]);
                 }
             }
+            var savePictures = [];
+            for (var p in pictures) {
+                if (pictures[p] && pictures[p].path !== "") {
+                    savePictures.push(pictures[p]);
+                }
+            }
             chrome.storage.sync.set({
                 "websites": saveWebsites,
                 "thingsToDo": saveThingsToDo,
+                "pictures": savePictures,
                 "timeouts": timeouts,
                 "currentPhoto": currentPhoto
             }, function() {
@@ -55,6 +64,9 @@
           }
           if (settings.timeouts) {
             timeouts = settings.timeouts;
+          }
+          if (settings.pictures) {
+            pictures = settings.pictures;
           }
           currentPhoto = settings.currentPhoto;
 
@@ -81,11 +93,19 @@
             '      {{/thingsToDo}}'+
             '      <div class="response addBtnRow"><a on-click="addThing" class="addX" >&#x271A; <span class="label">Add another</span></a></div>'+
             '  </div>'+
+            '<h2>I would like to be reminded by:</h2>'+
+            '  <div class="responses">'+
+            '      {{#pictures:num}}'+
+            '      <div class="response"><input type="text" value="{{path}}" /><a class="removeX" on-click="removePicture">&#x2716; <span class="label">Remove</span></a></div>'+
+            '      {{/pictures}}'+
+            '      <div class="response addBtnRow"><a on-click="addPicture" class="addX" >&#x271A; <span class="label">Add another</span></a></div>'+
+            '  </div>'+
             '',
             data: {
-            name: 'world',
-            websites: websites,
-            thingsToDo: thingsToDo
+                name: 'world',
+                websites: websites,
+                thingsToDo: thingsToDo,
+                pictures: pictures,
             }
         });
         ractive.on({
@@ -97,12 +117,20 @@
                 thingsToDo.push(BLANK_THING);
                 return false;
             },
+            addPicture: function() {
+                pictures.push(BLANK_PICTURE);
+                return false;
+            },
             removeSite: function(event) {
                 websites.splice(event.index.num, 1);
                 return false;
             },
             removeThing: function(event) {
                 thingsToDo.splice(event.index.num, 1);
+                return false;
+            },
+            removePicture: function(event) {
+                pictures.splice(event.index.num, 1);
                 return false;
             }
         });
@@ -112,6 +140,10 @@
         }, false);
         ractive.observe('thingsToDo', function ( newValue, oldValue, keypath ) {
             thingsToDo = newValue;
+            saveSettings();
+        }, false);
+        ractive.observe('pictures', function ( newValue, oldValue, keypath ) {
+            pictures = newValue;
             saveSettings();
         }, false);
     }

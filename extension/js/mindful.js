@@ -1,6 +1,7 @@
 (function() {
     var websites = [];
     var thingsToDo = [];
+    var pictures = [];
 
     var match = false;
     var href = window.location.href;
@@ -33,6 +34,7 @@
     chrome.storage.sync.get(null, function(settings) {
       websites = settings.websites || {};
       thingsToDo = settings.thingsToDo || {};
+      pictures = settings.pictures || {};
       timeouts = settings.timeouts || {};
       currentPhoto = settings.currentPhoto || {};
       initialized = true;
@@ -83,9 +85,16 @@
                     saveThingsToDo.push(thingsToDo[t]);
                 }
             }
+            var savePictures = [];
+            for (var p in pictures) {
+                if (pictures[p] && pictures[p].path != "") {
+                    savePictures.push(pictures[p]);
+                }
+            }
             chrome.storage.sync.set({
                 "websites": saveWebsites,
                 "thingsToDo": saveThingsToDo,
+                "pictures": savePictures,
                 "timeouts": timeouts,
                 "currentPhoto": currentPhoto,
             }, function() {
